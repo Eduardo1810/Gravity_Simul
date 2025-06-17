@@ -2,6 +2,9 @@ import pygame
 import settings
 import math
 import sys
+import os
+
+# Funções auxiliares
 
 def grav(ObPos, ObVel, TerPos):
     ObPos = list(ObPos)
@@ -13,16 +16,20 @@ def grav(ObPos, ObVel, TerPos):
     TerMas = settings.terrapeso
     ObMas = settings.objetopeso
     F = G * (TerMas * ObMas) / (dist*dist)
-    Fx = F * math.sin(math.atan(dX/dY))
-    Fy = F * math.cos(math.atan(dX/dY))
-    AccX = Fx / ObMas
-    AccY = Fy / ObMas
+    ang = math.atan(dX/dY)
+    Acc = F / ObMas
+    AccX = Acc * math.sin(ang)
+    AccY = Acc * math.cos(ang)
     ObVel[0] += AccX
     ObVel[1] += AccY
     ObPos[0] += ObVel[0]
     ObPos[1] += ObVel[1]
 
     return ObPos, ObVel
+
+def desenhar(pos):
+    for p in pos:
+        pygame.draw.circle(tela, ObjetoConfig[0], p, ObjetoConfig[1])
 
 # Inicializa o Pygame
 pygame.init()
@@ -58,7 +65,7 @@ while True:
         if evento.type == pygame.MOUSEBUTTONDOWN and click == False:
             pos = pygame.mouse.get_pos()
             if math.dist(pos, TerraConfig[0]) >= (ObjetoConfig[1] + TerraConfig[2]):
-                Velocidade += 5
+                Velocidade += 1
                 ObjetoPos[0].append(pos)
                 ObjetoPos[1].append((Velocidade, 0))
                 click = True
@@ -69,10 +76,15 @@ while True:
     # Desenhar objetos
     pygame.draw.circle(tela, TerraConfig[1], TerraConfig[0], TerraConfig[2])
     
-    # Verificar último objeto
+    # Verificar e aplicar gravidade no último objeto
     if len(ObjetoPos[0]) > 0:
-        pygame.draw.circle(tela, ObjetoConfig[0], ObjetoPos[0][-1], ObjetoConfig[1])
+        desenhar(ObjetoPos[0])
         ObjetoPos [0][-1], ObjetoPos[1][-1] = grav(ObjetoPos[0][-1], ObjetoPos[1][-1], TerraConfig[0])
+        if math.dist(ObjetoPos[0][-1], TerraConfig[0]) <= (ObjetoConfig[1] + TerraConfig[2]):
+           os.system('cls' if os.name == 'nt' else 'clear')
+           Velocidade += 1
+           ObjetoPos[0].append(pos)
+           ObjetoPos[1].append((Velocidade, 0)) 
 
     # Atualizar a tela
     pygame.display.update()

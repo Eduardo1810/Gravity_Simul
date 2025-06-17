@@ -6,6 +6,6 @@ fundo = (0, 0, 0)
 terra = (85, 107, 47)
 terrapeso = 500
 objeto = (192, 192, 192)
-objetopeso = 5
+objetopeso = 1
 
 G = 50
