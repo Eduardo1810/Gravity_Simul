@@ -2,7 +2,6 @@ import pygame
 import settings
 import math
 import sys
-import os
 
 # Funções auxiliares
 
@@ -10,16 +9,12 @@ def grav(ObPos, ObVel, TerPos):
     ObPos = list(ObPos)
     ObVel = list(ObVel)
     G = settings.G
-    dX = ObPos[0] - TerPos[0]
-    dY = ObPos[1] - TerPos[1]
     dist = math.dist(ObPos, TerPos)
     TerMas = settings.terrapeso
     ObMas = settings.objetopeso
-    F = G * (TerMas * ObMas) / (dist*dist)
-    ang = math.atan(dX/dY)
-    Acc = F / ObMas
-    AccX = Acc * math.sin(ang)
-    AccY = Acc * math.cos(ang)
+    F = G * (TerMas * ObMas) / (dist**2)
+    AccX = ((TerPos[0] - ObPos[0]) / dist) * F
+    AccY = ((TerPos[1] - ObPos[1]) / dist) * F
     ObVel[0] += AccX
     ObVel[1] += AccY
     ObPos[0] += ObVel[0]
@@ -35,7 +30,7 @@ def desenhar(pos):
 pygame.init()
 
 # Configurações gerais
-click = False
+clicks = 0
 fps = settings.fps
 largura = settings.larg
 altura = settings.alt
@@ -62,13 +57,16 @@ while True:
             pygame.quit()
             sys.exit()
         
-        if evento.type == pygame.MOUSEBUTTONDOWN and click == False:
+        if evento.type == pygame.MOUSEBUTTONDOWN and clicks == 0:
             pos = pygame.mouse.get_pos()
             if math.dist(pos, TerraConfig[0]) >= (ObjetoConfig[1] + TerraConfig[2]):
                 Velocidade += 1
                 ObjetoPos[0].append(pos)
                 ObjetoPos[1].append((Velocidade, 0))
-                click = True
+                clicks += 1
+        elif evento.type == pygame.MOUSEBUTTONDOWN and clicks == 1:
+            direc = pygame.mouse.get_pos()
+            clicks += 1
 
     # Preencher a tela com a cor de fundo
     tela.fill(cor_fundo)
@@ -79,12 +77,12 @@ while True:
     # Verificar e aplicar gravidade no último objeto
     if len(ObjetoPos[0]) > 0:
         desenhar(ObjetoPos[0])
-        ObjetoPos [0][-1], ObjetoPos[1][-1] = grav(ObjetoPos[0][-1], ObjetoPos[1][-1], TerraConfig[0])
-        if math.dist(ObjetoPos[0][-1], TerraConfig[0]) <= (ObjetoConfig[1] + TerraConfig[2]):
-           os.system('cls' if os.name == 'nt' else 'clear')
-           Velocidade += 1
-           ObjetoPos[0].append(pos)
-           ObjetoPos[1].append((Velocidade, 0)) 
+        if clicks == 2:
+            ObjetoPos [0][-1], ObjetoPos[1][-1] = grav(ObjetoPos[0][-1], ObjetoPos[1][-1], TerraConfig[0])
+            if math.dist(ObjetoPos[0][-1], TerraConfig[0]) <= (ObjetoConfig[1] + TerraConfig[2]):
+                Velocidade += 1
+                ObjetoPos[0].append(pos)
+                ObjetoPos[1].append((Velocidade * (direc[0] - pos[0]) / (math.dist(pos, direc)), Velocidade * (direc[1] - pos[1]) / (math.dist(pos, direc)))) 
 
     # Atualizar a tela
     pygame.display.update()
